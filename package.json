@@ -1,0 +1,23 @@
+{
+  "name": "pancia-piena-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Giuseppe Migliozzi",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.5.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.5.2"
+  }
+}
