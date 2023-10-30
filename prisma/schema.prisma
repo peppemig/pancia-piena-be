@@ -16,4 +16,13 @@ model User {
   name String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id  String  @id @default(uuid())
+  name  String
+  price Decimal @db.Decimal(10,2)
+  userId  String
+  user User @relation(fields: [userId], references: [id])
 }
