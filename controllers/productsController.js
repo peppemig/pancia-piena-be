@@ -3,13 +3,14 @@ const prisma = require("../config/prisma");
 const createProduct = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { name, price } = req.body;
+    const { name, price, category } = req.body;
 
     const product = await prisma.product.create({
       data: {
         name: name,
         price: price,
         userId: userId,
+        category: category,
       },
     });
 
