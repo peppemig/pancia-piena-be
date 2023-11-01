@@ -41,6 +41,40 @@ const getProducts = async (req, res) => {
   }
 };
 
+const editProduct = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { productId } = req.params;
+    const { name, price } = req.body;
+
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (product.userId !== userId) {
+      res.status(401).json({ success: false, msg: "Not authorized" });
+    }
+
+    await prisma.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        name,
+        price,
+      },
+    });
+
+    res.status(201).json({
+      success: "true",
+    });
+  } catch (error) {
+    res.status(400).json({ success: false });
+  }
+};
+
 const deleteProduct = async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -70,4 +104,4 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { createProduct, getProducts, deleteProduct };
+module.exports = { createProduct, getProducts, deleteProduct, editProduct };
