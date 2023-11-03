@@ -14,6 +14,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   products  Product[]
+  orders  Order[]
 }
 
 model Product {
@@ -21,8 +22,29 @@ model Product {
   name  String
   price Decimal @db.Decimal(10,2)
   userId  String
-  user User @relation(fields: [userId], references: [id])
   category Category
+  orderItems  OrderItem[]
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id  String  @id @default(uuid())
+  tableNumber Int
+  totalPrice Decimal @db.Decimal(10,2)
+  isCompleted Boolean @default(false)
+  createdAt DateTime  @default(now())
+  userId  String
+  orderItems OrderItem[]
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model OrderItem {
+  id  String  @id @default(uuid())
+  quantity  Int
+  productId String
+  orderId String
+  product Product @relation(fields: [productId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 }
 
 enum Category {
