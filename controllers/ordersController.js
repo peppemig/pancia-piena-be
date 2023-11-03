@@ -6,7 +6,15 @@ const getOrders = async (req, res) => {
 
     const orders = await prisma.order.findMany({
       where: {
+        isCompleted: false,
         userId: userId,
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
@@ -17,25 +25,38 @@ const getOrders = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  const { tableNumber, orderItems } = req.body;
-  const { id: userId } = req.user;
-  console.log(req.body);
-  console.log(userId);
   try {
+    const { tableNumber, orderItems } = req.body;
+    const { id: userId } = req.user;
+
     const products = await prisma.product.findMany({
       where: {
-        id: orderItems.map((item) => item.productId),
+        userId: userId,
+        id: {
+          in: orderItems.map((item) => item.productId),
+        },
       },
     });
-
-    console.log(products);
 
     const totalPrice = orderItems.reduce((acc, item) => {
       const product = products.find((product) => product.id === item.productId);
       return acc + item.quantity * product.price;
     }, 0);
 
-    console.log(totalPrice);
+    await prisma.order.create({
+      data: {
+        tableNumber: tableNumber,
+        totalPrice: totalPrice,
+        userId: userId,
+        orderItems: {
+          create: orderItems.map((item) => ({
+            quantity: item.quantity,
+            productId: item.productId,
+          })),
+        },
+      },
+      include: { orderItems: true },
+    });
 
     res.status(201).json({ success: true });
   } catch (error) {
