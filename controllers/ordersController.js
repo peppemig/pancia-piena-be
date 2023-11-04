@@ -24,6 +24,30 @@ const getOrders = async (req, res) => {
   }
 };
 
+const getCompletedOrders = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const orders = await prisma.order.findMany({
+      where: {
+        isCompleted: true,
+        userId: userId,
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    res.status(400).json({ success: false });
+  }
+};
+
 const deleteOrder = async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -104,4 +128,10 @@ const createOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getOrders, deleteOrder, setOrderToCompleted };
+module.exports = {
+  createOrder,
+  getOrders,
+  deleteOrder,
+  setOrderToCompleted,
+  getCompletedOrders,
+};

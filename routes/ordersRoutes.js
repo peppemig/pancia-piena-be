@@ -4,10 +4,13 @@ const {
   getOrders,
   deleteOrder,
   setOrderToCompleted,
+  getCompletedOrders,
 } = require("../controllers/ordersController");
 const router = Router();
 
 router.route("/").post(createOrder).get(getOrders);
+
+router.route("/completed").get(getCompletedOrders);
 
 router.route("/:orderId").delete(deleteOrder);
 
