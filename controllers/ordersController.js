@@ -24,6 +24,46 @@ const getOrders = async (req, res) => {
   }
 };
 
+const deleteOrder = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { orderId } = req.params;
+
+    await prisma.order.delete({
+      where: {
+        userId: userId,
+        id: orderId,
+      },
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(400).json({ success: false });
+  }
+};
+
+const setOrderToCompleted = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { orderId } = req.params;
+
+    await prisma.order.update({
+      where: {
+        userId: userId,
+        id: orderId,
+      },
+      data: {
+        isCompleted: true,
+      },
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false });
+  }
+};
+
 const createOrder = async (req, res) => {
   try {
     const { tableNumber, orderItems } = req.body;
@@ -64,4 +104,4 @@ const createOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getOrders };
+module.exports = { createOrder, getOrders, deleteOrder, setOrderToCompleted };
