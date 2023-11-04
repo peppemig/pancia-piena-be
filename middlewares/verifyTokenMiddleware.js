@@ -29,4 +29,20 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth;
+const socketAuth = async (socket, next) => {
+  if (!socket.handshake.query && !socket.handshake.query.token) {
+    next(new Error("Not authenticated"));
+  }
+
+  const token = socket.handshake.query.token;
+
+  try {
+    const authUser = await admin.auth().verifyIdToken(token);
+    socket.user = authUser.user_id;
+    next();
+  } catch (error) {
+    next(new Error("Not authenticated"));
+  }
+};
+
+module.exports = { auth, socketAuth };
