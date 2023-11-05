@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const usersRoutes = require("./routes/usersRoutes");
 const productsRoutes = require("./routes/productsRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
+const statsRoutes = require("./routes/statsRoutes");
 const { auth, socketAuth } = require("./middlewares/verifyTokenMiddleware");
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/products", auth, productsRoutes);
 app.use("/api/v1/orders", auth, ordersRoutes);
+app.use("/api/v1/stats", auth, statsRoutes);
 
 io.use(socketAuth).on("connection", (socket) => {
   console.log("a user has connected");
