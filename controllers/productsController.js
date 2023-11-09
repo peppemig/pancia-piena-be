@@ -1,9 +1,11 @@
 const prisma = require("../config/prisma");
+const redis = require("../config/redis");
 
 const createProduct = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { name, price, category } = req.body;
+    const cacheKey = `user:${userId}:products`;
 
     const product = await prisma.product.create({
       data: {
@@ -13,6 +15,11 @@ const createProduct = async (req, res) => {
         category: category,
       },
     });
+
+    const result = await redis.get(cacheKey);
+    if (result !== null) {
+      redis.del(cacheKey);
+    }
 
     res.status(200).json({
       success: "true",
@@ -26,6 +33,15 @@ const createProduct = async (req, res) => {
 const getProducts = async (req, res) => {
   try {
     const { id: userId } = req.user;
+    const cacheKey = `user:${userId}:products`;
+
+    const result = await redis.get(cacheKey);
+
+    if (result !== null) {
+      return res
+        .status(200)
+        .json({ success: true, products: JSON.parse(result) });
+    }
 
     const products = await prisma.product.findMany({
       where: {
@@ -33,11 +49,14 @@ const getProducts = async (req, res) => {
       },
     });
 
+    await redis.set(cacheKey, JSON.stringify(products), "EX", 3600);
+
     res.status(200).json({
       success: "true",
       products,
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ success: false });
   }
 };
@@ -47,6 +66,7 @@ const editProduct = async (req, res) => {
     const { id: userId } = req.user;
     const { productId } = req.params;
     const { name, price } = req.body;
+    const cacheKey = `user:${userId}:products`;
 
     const product = await prisma.product.findUnique({
       where: {
@@ -68,6 +88,11 @@ const editProduct = async (req, res) => {
       },
     });
 
+    const result = await redis.get(cacheKey);
+    if (result !== null) {
+      redis.del(cacheKey);
+    }
+
     res.status(201).json({
       success: "true",
     });
@@ -80,6 +105,7 @@ const deleteProduct = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { productId } = req.params;
+    const cacheKey = `user:${userId}:products`;
 
     const product = await prisma.product.findUnique({
       where: {
@@ -96,6 +122,11 @@ const deleteProduct = async (req, res) => {
         id: productId,
       },
     });
+
+    const result = await redis.get(cacheKey);
+    if (result !== null) {
+      redis.del(cacheKey);
+    }
 
     res.status(200).json({
       success: "true",
