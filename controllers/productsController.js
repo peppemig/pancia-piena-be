@@ -16,8 +16,8 @@ const createProduct = async (req, res) => {
       },
     });
 
-    const result = await redis.get(cacheKey);
-    if (result !== null) {
+    const cache = await redis.get(cacheKey);
+    if (cache) {
       redis.del(cacheKey);
     }
 
@@ -35,12 +35,12 @@ const getProducts = async (req, res) => {
     const { id: userId } = req.user;
     const cacheKey = `user:${userId}:products`;
 
-    const result = await redis.get(cacheKey);
+    const cache = await redis.get(cacheKey);
 
-    if (result !== null) {
+    if (cache) {
       return res
         .status(200)
-        .json({ success: true, products: JSON.parse(result) });
+        .json({ success: true, products: JSON.parse(cache) });
     }
 
     const products = await prisma.product.findMany({
@@ -88,8 +88,8 @@ const editProduct = async (req, res) => {
       },
     });
 
-    const result = await redis.get(cacheKey);
-    if (result !== null) {
+    const cache = await redis.get(cacheKey);
+    if (cache) {
       redis.del(cacheKey);
     }
 
@@ -123,8 +123,8 @@ const deleteProduct = async (req, res) => {
       },
     });
 
-    const result = await redis.get(cacheKey);
-    if (result !== null) {
+    const cache = await redis.get(cacheKey);
+    if (cache) {
       redis.del(cacheKey);
     }
 
