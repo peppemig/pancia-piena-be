@@ -1,10 +1,19 @@
 const prisma = require("../config/prisma");
 const { format, startOfMonth, endOfMonth } = require("date-fns");
+const redis = require("../config/redis");
 
 const getStats = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { year, month } = req.query;
+
+    const cacheKey = `user:${userId}:stats:${year}:${month}`;
+
+    const cache = await redis.get(cacheKey);
+
+    if (cache) {
+      return res.status(200).json({ success: true, stats: JSON.parse(cache) });
+    }
 
     const monthNumber = parseInt(month);
     const yearNumber = parseInt(year);
@@ -16,20 +25,6 @@ const getStats = async (req, res) => {
 
     const formattedFirstDayOfMonth = format(firstDayOfMonth, "yyyy-MM-dd");
     const formattedLastDayOfMonth = format(lastDayOfMonth, "yyyy-MM-dd");
-
-    //const monthlyStats = await prisma.order.aggregate({
-    //  _count: true,
-    //  _sum: {
-    //    totalPrice: true,
-    //  },
-    //  where: {
-    //    userId: userId,
-    //    createdAt: {
-    //      gte: new Date(formattedFirstDayOfMonth),
-    //      lte: new Date(formattedLastDayOfMonth),
-    //    },
-    //  },
-    //});
 
     const monthTotal = await prisma.order.aggregate({
       _sum: {
@@ -63,6 +58,13 @@ const getStats = async (req, res) => {
         userId: userId,
       },
     });
+
+    await redis.set(
+      cacheKey,
+      JSON.stringify({ graphStats, monthTotal, last5Orders }),
+      "EX",
+      60
+    );
 
     res.status(200).json({
       success: true,
