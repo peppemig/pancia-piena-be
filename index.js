@@ -3,6 +3,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const helmet = require("helmet");
 const morgan = require("morgan");
 const usersRoutes = require("./routes/usersRoutes");
 const productsRoutes = require("./routes/productsRoutes");
@@ -20,6 +21,7 @@ const io = new Server(server, {
 
 const PORT = 3000;
 
+app.use(helmet());
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
@@ -31,9 +33,6 @@ app.use("/api/v1/stats", auth, statsRoutes);
 
 io.use(socketAuth).on("connection", (socket) => {
   console.log("a user has connected");
-
-  // THIS IS THE USER ID
-  //console.log(socket.user);
 
   const room = `room-${socket.user}`;
   socket.join(room);
