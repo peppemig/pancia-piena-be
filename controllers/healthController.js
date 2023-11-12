@@ -7,8 +7,10 @@ const getHealth = async (req, res) => {
     await redis.ping();
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error("Health check failed: ", error);
     res.status(503).json({
       success: false,
+      error: error.message,
     });
   }
 };
