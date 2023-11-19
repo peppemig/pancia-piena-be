@@ -24,14 +24,30 @@ const getOrders = async (req, res) => {
   }
 };
 
-const getCompletedOrders = async (req, res) => {
+const getCompletedOrdersPaginated = async (req, res) => {
   try {
     const { id: userId } = req.user;
+    const page = parseInt(req.query.page);
+    const perPage = 20;
+
+    const totalItems = await prisma.order.count({
+      where: {
+        isCompleted: true,
+        userId: userId,
+      },
+    });
+
+    const totalPages = Math.ceil(totalItems / perPage);
 
     const orders = await prisma.order.findMany({
       where: {
         isCompleted: true,
         userId: userId,
+      },
+      skip: (page - 1) * perPage,
+      take: perPage,
+      orderBy: {
+        createdAt: "desc",
       },
       include: {
         orderItems: {
@@ -42,7 +58,7 @@ const getCompletedOrders = async (req, res) => {
       },
     });
 
-    res.status(200).json({ success: true, orders });
+    res.status(200).json({ success: true, ordersData: { orders, totalPages } });
   } catch (error) {
     res.status(400).json({ success: false });
   }
@@ -133,5 +149,5 @@ module.exports = {
   getOrders,
   deleteOrder,
   setOrderToCompleted,
-  getCompletedOrders,
+  getCompletedOrdersPaginated,
 };
