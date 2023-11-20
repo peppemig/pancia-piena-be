@@ -24,7 +24,7 @@ const PORT = 3000;
 
 app.use(helmet());
 app.use(morgan("tiny"));
-app.use(cors());
+app.use(cors({ origin: process.env.ORIGIN_URL }));
 app.use(express.json());
 
 app.use("/api/v1/health", healthRoutes);

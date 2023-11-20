@@ -18,7 +18,7 @@ const getOrders = async (req, res) => {
       },
     });
 
-    res.status(200).json({ success: true, orders });
+    res.status(200).json({ success: true, ordersData: { orders } });
   } catch (error) {
     res.status(400).json({ success: false });
   }
